@@ -1,0 +1,350 @@
+{
+  "timeline": {
+    "total_orders": 5,
+    "first_order": "2026-03-02 19:12",
+    "last_order": "2026-10-08 08:30",
+    "span_days": 219,
+    "by_month": [
+      {
+        "month": "2026-03",
+        "orders": 1,
+        "spend": 84.0
+      },
+      {
+        "month": "2026-04",
+        "orders": 1,
+        "spend": 56.0
+      },
+      {
+        "month": "2026-06",
+        "orders": 1,
+        "spend": 44.0
+      },
+      {
+        "month": "2026-09",
+        "orders": 1,
+        "spend": 74.0
+      },
+      {
+        "month": "2026-10",
+        "orders": 1,
+        "spend": 32.0
+      }
+    ],
+    "by_channel": [
+      {
+        "channel": "self_pickup",
+        "orders": 3,
+        "spend": 160.0
+      },
+      {
+        "channel": "delivery",
+        "orders": 2,
+        "spend": 130.0
+      }
+    ],
+    "by_store": [
+      {
+        "store": "望京SOHO店",
+        "orders": 4,
+        "spend": 234.0
+      },
+      {
+        "store": "三里屯太古里店",
+        "orders": 1,
+        "spend": 56.0
+      }
+    ],
+    "by_hour": [
+      {
+        "hour": 0,
+        "orders": 0
+      },
+      {
+        "hour": 1,
+        "orders": 0
+      },
+      {
+        "hour": 2,
+        "orders": 0
+      },
+      {
+        "hour": 3,
+        "orders": 0
+      },
+      {
+        "hour": 4,
+        "orders": 0
+      },
+      {
+        "hour": 5,
+        "orders": 0
+      },
+      {
+        "hour": 6,
+        "orders": 0
+      },
+      {
+        "hour": 7,
+        "orders": 0
+      },
+      {
+        "hour": 8,
+        "orders": 1
+      },
+      {
+        "hour": 9,
+        "orders": 0
+      },
+      {
+        "hour": 10,
+        "orders": 0
+      },
+      {
+        "hour": 11,
+        "orders": 0
+      },
+      {
+        "hour": 12,
+        "orders": 1
+      },
+      {
+        "hour": 13,
+        "orders": 0
+      },
+      {
+        "hour": 14,
+        "orders": 0
+      },
+      {
+        "hour": 15,
+        "orders": 0
+      },
+      {
+        "hour": 16,
+        "orders": 0
+      },
+      {
+        "hour": 17,
+        "orders": 0
+      },
+      {
+        "hour": 18,
+        "orders": 0
+      },
+      {
+        "hour": 19,
+        "orders": 1
+      },
+      {
+        "hour": 20,
+        "orders": 0
+      },
+      {
+        "hour": 21,
+        "orders": 0
+      },
+      {
+        "hour": 22,
+        "orders": 1
+      },
+      {
+        "hour": 23,
+        "orders": 1
+      }
+    ],
+    "moods": {
+      "late_night": 2,
+      "breakfast": 1,
+      "counted": 5
+    },
+    "busiest_day": {
+      "date": "2026-03-02",
+      "orders": 1
+    },
+    "longest_gap_days": 107
+  },
+  "profile": {
+    "orders": 5,
+    "headline": "5 单、290 元、平均 58.0 元/单，最常点「巨无霸套餐」",
+    "traits": [
+      {
+        "tag": "深夜食客",
+        "detail": "2/5 单下在21 点后，最晚的一单在 23:05"
+      },
+      {
+        "tag": "早餐党",
+        "detail": "1/5 单在上午 10 点前下的，早起的麦麦是有回报的"
+      },
+      {
+        "tag": "干饭结构",
+        "detail": "主食 7 份 vs 饮品 5 杯"
+      },
+      {
+        "tag": "回头客",
+        "detail": "4/5 单来自「望京SOHO店」"
+      }
+    ],
+    "top_items": [
+      {
+        "name": "巨无霸套餐",
+        "times": 3
+      },
+      {
+        "name": "中可乐",
+        "times": 3
+      },
+      {
+        "name": "板烧鸡腿堡",
+        "times": 2
+      },
+      {
+        "name": "麦乐鸡5块",
+        "times": 1
+      },
+      {
+        "name": "鸡翅(3块)",
+        "times": 1
+      },
+      {
+        "name": "培根蔬萃双层牛堡",
+        "times": 1
+      },
+      {
+        "name": "热美式",
+        "times": 1
+      },
+      {
+        "name": "麦旋风",
+        "times": 1
+      }
+    ],
+    "categories": [
+      {
+        "name": "未分类",
+        "times": 15
+      }
+    ],
+    "roles": [
+      {
+        "role": "main",
+        "count": 7
+      },
+      {
+        "role": "drink",
+        "count": 5
+      },
+      {
+        "role": "other",
+        "count": 1
+      },
+      {
+        "role": "side",
+        "count": 1
+      },
+      {
+        "role": "dessert",
+        "count": 1
+      }
+    ],
+    "avg_spend": 58.0,
+    "median_spend": 56.0,
+    "total_spend": 290.0,
+    "favorite_store": "望京SOHO店",
+    "distinct_items": 10
+  },
+  "moments": [
+    {
+      "order_id": "M2026092004",
+      "when": "2026-09-20 23:05",
+      "store": "望京SOHO店",
+      "channel": "delivery",
+      "total_amount": 74.0,
+      "items": [
+        {
+          "name": "巨无霸套餐",
+          "quantity": 1
+        },
+        {
+          "name": "麦旋风",
+          "quantity": 1
+        },
+        {
+          "name": "中可乐",
+          "quantity": 1
+        }
+      ],
+      "story": "09-20 深夜 23:05，在望京SOHO店，你吃了巨无霸套餐、麦旋风、中可乐。"
+    },
+    {
+      "order_id": "M20260418B2",
+      "when": "2026-04-18 22:47",
+      "store": "三里屯太古里店",
+      "channel": "delivery",
+      "total_amount": 56.0,
+      "items": [
+        {
+          "name": "板烧鸡腿堡",
+          "quantity": 2
+        },
+        {
+          "name": "中可乐",
+          "quantity": 2
+        },
+        {
+          "name": "鸡翅(3块)",
+          "quantity": 1
+        }
+      ],
+      "story": "04-18 深夜 22:47，在三里屯太古里店，你吃了板烧鸡腿堡、中可乐、鸡翅(3块)。"
+    },
+    {
+      "order_id": "M20260302A1",
+      "when": "2026-03-02 19:12",
+      "store": "望京SOHO店",
+      "channel": "self_pickup",
+      "total_amount": 84.0,
+      "items": [
+        {
+          "name": "巨无霸套餐",
+          "quantity": 2
+        },
+        {
+          "name": "麦乐鸡5块",
+          "quantity": 1
+        }
+      ],
+      "story": "03-02 19:12，望京SOHO店，巨无霸套餐、麦乐鸡5块。"
+    }
+  ],
+  "replay": {
+    "found": true,
+    "order": {
+      "order_id": "M2026100805",
+      "when": "2026-10-08 08:30",
+      "store": "望京SOHO店",
+      "channel": "self_pickup",
+      "total_amount": 32.0
+    },
+    "recipe": [
+      {
+        "name": "吉士蛋堡",
+        "code": null,
+        "quantity": 1,
+        "is_set": false,
+        "note": null
+      },
+      {
+        "name": "中热美式",
+        "code": null,
+        "quantity": 1,
+        "is_set": false,
+        "note": null
+      }
+    ],
+    "hints": [
+      "这一单是到店自提，复刻时可直接比对当前门店菜单是否一致"
+    ],
+    "disclaimer": "本函数仅生成复刻清单，不会自动下单；下单需你显式确认。"
+  }
+}

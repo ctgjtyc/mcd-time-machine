@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 环境变量与本地凭证（严禁提交）
+.env
+.env.*
+mcp-config.json
+*.local.json
+
+# 编辑器
+.vscode/
+.idea/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 本地实测产物（可能含真实 Token 或订单信息，不入库）
+/live/
+*.live.md
+live-*.json

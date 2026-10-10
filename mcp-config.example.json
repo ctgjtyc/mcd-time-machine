@@ -1,0 +1,12 @@
+{
+  "_comment": "麦当劳 MCP 配置示例。本文件仅含占位符，不含任何真实凭证。",
+  "mcpServers": {
+    "mcd-mcp": {
+      "type": "streamablehttp",
+      "url": "https://mcp.mcd.cn",
+      "headers": {
+        "Authorization": "Bearer YOUR_MCP_TOKEN"
+      }
+    }
+  }
+}
