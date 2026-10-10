@@ -38,7 +38,7 @@ __all__ = [
 FIELD_ALIASES: dict[str, tuple[str, ...]] = {
     # --- 标识 ---
     "order_id": ("orderid", "orderno", "ordercode", "id", "order_id", "order_no"),
-    # --- 时间 ---
+    # --- 时间（2026-10-10 实测确认 createTime 存在，格式 "YYYY-MM-DD HH:MM"）---
     "created_at": (
         "createtime",
         "createdat",
@@ -58,8 +58,19 @@ FIELD_ALIASES: dict[str, tuple[str, ...]] = {
         "complete_time",
         "completedtime",
     ),
-    # --- 金额（单位：分，引擎统一转元） ---
-    "total_amount": ("totalamount", "totalprice", "payamount", "payamt", "amount", "total"),
+    # --- 金额 ---
+    # ⚠️ 2026-10-10 实测：order-list 列表项只有 realTotalAmount（字符串，如 "84.00"，单位=元）。
+    # totalAmount/payAmount 等仅在 query-order 明细中出现，故 realTotalAmount 优先级最高。
+    "total_amount": (
+        "realtotalamount",
+        "realtotalprice",
+        "totalamount",
+        "totalprice",
+        "payamount",
+        "payamt",
+        "amount",
+        "total",
+    ),
     "discount_amount": (
         "discountamount",
         "discount",
@@ -67,11 +78,11 @@ FIELD_ALIASES: dict[str, tuple[str, ...]] = {
         "reduceamount",
         "youhui",
     ),
-    # --- 就餐方式 ---
+    # --- 就餐方式（实测键名 orderType，值域含中文「堂食」等）---
     "channel": (
+        "ordertype",
         "diningtype",
         "diningmode",
-        "ordertype",
         "servicetype",
         "channeltype",
         "channel",
@@ -84,8 +95,14 @@ FIELD_ALIASES: dict[str, tuple[str, ...]] = {
         "restaurantname",
         "storetext",
     ),
+    "store_code": ("storecode", "store_code", "shopcode"),
+    "order_status": ("orderstatus", "order_status", "status"),
     # --- 明细 ---
+    # ⚠️ 2026-10-10 实测：真实键名为 orderProductList（商品数组），
+    # 且套餐子项在 comboItemList 里——先前猜测的 "items"/"goodsList" 均未命中。
     "items": (
+        "orderproductlist",
+        "orderproduct",
         "items",
         "goodslist",
         "products",
@@ -99,13 +116,26 @@ FIELD_ALIASES: dict[str, tuple[str, ...]] = {
 }
 
 # 商品行字段别名（item 层）
+# ⚠️ 2026-10-10 实测（order-list 的 orderProductList 元素）：
+#   productCode / productName / quantity / comboItemList
+#   —— **没有 price 字段**。列表页不给单价，金额只在订单级 realTotalAmount。
+#   因此 item.line_total 在列表场景下会算成 0，属预期；单价需 query-order 补齐。
 _ITEM_ALIASES: dict[str, tuple[str, ...]] = {
-    "name": ("name", "goodsname", "productname", "itemname", "title"),
-    "code": ("code", "productcode", "goodscode", "itemcode", "skuid", "id"),
-    "quantity": ("quantity", "qty", "num", "count", "amount", "numcount"),
-    "price": ("price", "amount", "unitprice", "singleprice", "saleprice", "totalprice"),
-    "category": ("category", "categoryname", "classname", "typename", "sort"),
-    "is_set": ("isset", "is_set", "iscombo", "is_setmeal", "combo", "ispackage"),
+    "name": ("productname", "name", "goodsname", "itemname", "title"),
+    "code": ("productcode", "code", "goodscode", "itemcode", "skuid", "id"),
+    "quantity": ("quantity", "qty", "num", "count", "numcount"),
+    "price": (
+        "price",
+        "amount",
+        "unitprice",
+        "singleprice",
+        "saleprice",
+        "realprice",
+        "totalprice",
+    ),
+    "category": ("categoryname", "category", "classname", "typename", "sort"),
+    "is_set": ("isset", "iscombo", "is_setmeal", "comboflag", "combo"),
+    "sub_items": ("comboitemlist", "comboitems", "subitems", "subitemlist"),
 }
 
 # 归一化后的统一就餐方式标签
@@ -230,25 +260,33 @@ def parse_datetime(value: Any) -> _dt.datetime | None:
     return None
 
 
-def _to_yuan(value: Any) -> float | None:
+def _to_yuan(value: Any, cents_hint: bool | None = None) -> float | None:
     """金额归一化到「元」。
 
-    MCP 侧金额通常是**分**（整数）。启发式规则：整数且 >= 1000 视为分，
-    其余按元处理。允许调用方用 ``cents_hint`` 强制指定。
+    **2026-10-10 实测结论（order-list）**：``realTotalAmount`` 是**字符串元**，
+    形如 ``"84.00"``。因此：
+
+    - ``cents_hint=True``：强制按分÷100
+    - ``cents_hint=False``：强制按元
+    - ``cents_hint=None``（默认）：启发式——无小数点的整数且 abs>=1000 视为分
+
+    实测数据里 ``"84.00"`` 这类带小数的值会走"按元"分支，故启发式对真实数据安全。
     """
     if value is None or value == "":
         return None
     if isinstance(value, str):
-        text = value.strip().replace(",", "")
-        if text.endswith("元"):
-            text = text[:-1]
+        text = value.strip().replace(",", "").replace("￥", "").replace("元", "")
         if not _CENT_PATTERN.match(text):
             return None
         value = float(text)
     if not isinstance(value, (int, float)):
         return None
     number = float(value)
-    # 明显是「分」的特征：没有小数部分且数值较大
+    if cents_hint is True:
+        return number / 100.0
+    if cents_hint is False:
+        return number
+    # 启发式：无小数部分且数值较大 ⇒ 视为分
     if number == int(number) and abs(number) >= 1000:
         return number / 100.0
     return number
@@ -281,6 +319,9 @@ def _normalize_item(raw_item: Mapping[str, Any]) -> dict[str, Any]:
     except (TypeError, ValueError):
         price_float = 0.0
 
+    sub_raw = _pick_from(raw_item, "sub_items")
+    sub_items = _extract_items(sub_raw)
+
     is_set_raw = _pick_from(raw_item, "is_set")
     if isinstance(is_set_raw, bool):
         is_set = is_set_raw
@@ -289,9 +330,11 @@ def _normalize_item(raw_item: Mapping[str, Any]) -> dict[str, Any]:
     elif isinstance(is_set_raw, str):
         is_set = _norm_key(is_set_raw) in {"true", "1", "yes", "是"}
     else:
-        # 名称启发式：套餐/超值/双享 等中文关键词 + 英文 combo/set
-        name_text = _norm_key(name)
-        is_set = any(k in name_text for k in ("套餐", "超值", "双享", "taocan", "combo", "setmeal"))
+        # 判据优先级：comboItemList 非空 > 名称关键词。
+        # 实测中套餐一定带 comboItemList，是比名称匹配更硬的信号。
+        is_set = bool(sub_items) or any(
+            k in _norm_key(name) for k in ("套餐", "超值", "双享", "taocan", "combo", "setmeal")
+        )
 
     return {
         "name": str(name).strip() if name is not None else None,
@@ -301,6 +344,7 @@ def _normalize_item(raw_item: Mapping[str, Any]) -> dict[str, Any]:
         "line_total": round(price_float * qty_int, 2),
         "category": _pick_from(raw_item, "category"),
         "is_set": is_set,
+        "sub_items": sub_items,
         "raw": dict(raw_item),
     }
 
@@ -364,6 +408,16 @@ def normalize_order(raw: Mapping[str, Any]) -> dict[str, Any] | None:
             if pick(raw, "store_name") not in (None, "")
             else None
         ),
+        "store_code": (
+            str(pick(raw, "store_code")).strip()
+            if pick(raw, "store_code") not in (None, "")
+            else None
+        ),
+        "order_status": (
+            str(pick(raw, "order_status")).strip()
+            if pick(raw, "order_status") not in (None, "")
+            else None
+        ),
         "items": items,
         "item_count": sum(i["quantity"] for i in items),
         "raw": dict(raw),
@@ -391,7 +445,16 @@ def normalize_orders(
         if not isinstance(current, Mapping):
             return []
         nxt = None
-        for key in ("orders", "orderlist", "list", "records", "items", "data", "result"):
+        for key in (
+            "list",
+            "orders",
+            "orderlist",
+            "records",
+            "items",
+            "data",
+            "result",
+            "orderproductlist",
+        ):
             candidate = current.get(key)
             if isinstance(candidate, (Mapping, list)):
                 nxt = candidate

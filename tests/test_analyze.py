@@ -269,6 +269,87 @@ class TestReplay(unittest.TestCase):
         self.assertIn("disclaimer", r)
 
 
+class TestRealSchemaRegression(unittest.TestCase):
+    """回归测试：锁定 2026-10-10 实测的真实 MCP 字段名。
+
+    这批测试的价值在于——若将来有人「凭直觉」把别名改回 items/totalAmount/
+    goodsList 等猜测值，本组会立刻失败。
+    """
+
+    # 真实 order-list 出参（2026-10-10 从 MCP schema 描述中取得）
+    REAL_ORDER = {
+        "orderId": "M20261008999",
+        "orderType": "堂食",
+        "createTime": "2026-10-08 19:12",
+        "beType": "餐厅",
+        "beCode": "B001",
+        "storeCode": "S001",
+        "storeName": "望京SOHO店",
+        "orderStatus": "完成",
+        "orderProductList": [
+            {
+                "productCode": "P001",
+                "productName": "巨无霸套餐",
+                "quantity": 1,
+                "comboItemList": [
+                    {"productCode": "S1", "productName": "中薯", "quantity": 1},
+                    {"productCode": "S2", "productName": "中可乐", "quantity": 1},
+                ],
+            },
+            {"productCode": "P002", "productName": "麦乐鸡", "quantity": 2, "comboItemList": []},
+        ],
+        "realTotalAmount": "84.00",
+    }
+
+    def test_real_schema_parses_all_fields(self):
+        out = normalize_orders({"data": {"list": [self.REAL_ORDER]}})
+        self.assertEqual(len(out), 1)
+        o = out[0]
+        self.assertEqual(o["order_id"], "M20261008999")
+        self.assertEqual(o["total_amount"], 84.0)          # 字符串 "84.00" → 元
+        self.assertEqual(o["channel"], "dine_in")          # orderType="堂食"
+        self.assertEqual(o["store_name"], "望京SOHO店")
+        self.assertEqual(o["store_code"], "S001")
+        self.assertEqual(o["order_status"], "完成")
+        self.assertEqual(o["created_at"].strftime("%Y-%m-%d %H:%M"), "2026-10-08 19:12")
+        self.assertEqual(o["item_count"], 3)               # 1 + 2
+
+    def test_real_schema_items_and_combo(self):
+        o = normalize_orders({"data": {"list": [self.REAL_ORDER]}})[0]
+        names = [i["name"] for i in o["items"]]
+        self.assertEqual(names, ["巨无霸套餐", "麦乐鸡"])
+        combo = o["items"][0]
+        self.assertTrue(combo["is_set"])
+        self.assertEqual([s["name"] for s in combo["sub_items"]], ["中薯", "中可乐"])
+        self.assertFalse(o["items"][1]["is_set"])
+
+    def test_real_schema_outer_wrapper(self):
+        """真实外层是 data.list；也须兼容 MCP 文档所示的其他包裹。"""
+        for payload in (
+            {"data": {"list": [self.REAL_ORDER]}},
+            {"list": [self.REAL_ORDER]},
+            [self.REAL_ORDER],
+        ):
+            self.assertEqual(len(normalize_orders(payload)), 1)
+
+    def test_real_schema_empty_data_returns_empty(self):
+        """实测新账号返回 {"data":{}} —— 不得抛异常，返回空列表。"""
+        self.assertEqual(normalize_orders({"data": {}}), [])
+
+    def test_real_schema_analysis_pipeline(self):
+        """真实字段结构能跑通时间轴与画像全链路。"""
+        orders = normalize_orders({"data": {"list": [self.REAL_ORDER]}})
+        tl = build_timeline(orders)
+        self.assertEqual(tl["total_orders"], 1)
+        self.assertEqual(tl["by_month"][0]["month"], "2026-10")
+        profile = build_taste_profile(orders)
+        self.assertEqual(profile["orders"], 1)
+        self.assertAlmostEqual(profile["total_spend"], 84.0, places=2)
+        r = replay_order(orders)
+        self.assertTrue(r["found"])
+        self.assertEqual(len(r["recipe"]), 2)
+
+
 class TestMoments(unittest.TestCase):
     def test_late_night_ranked_first(self):
         moments = rank_moments(SAMPLE)

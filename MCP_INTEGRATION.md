@@ -7,14 +7,63 @@
 
 | 项 | 值 |
 |---|---|
-| 接入地址 | `https://mcp.mcd.cn` |
+| **接入地址（2026-10-10 实测）** | `https://mcp.mcd.cn` |
 | 传输协议 | Streamable HTTP |
 | 鉴权方式 | 请求头 `Authorization: Bearer <MCP_TOKEN>` |
 | Token 申请 | [open.mcd.cn/mcp](https://open.mcd.cn/mcp) → 手机号登录 → 控制台 → 激活 |
 | 限流 | 每 Token 每分钟 600 次请求，超限返回 429 |
-| 错误码 | 401 Token 无效/过期；429 触发限流 |
+| 错误码 | 401 Token 无效/过期；429 触发限流；404 路径错误 |
+| 工具总数 | 35 个（实测与官方 README 一致） |
+
+> ### ⚠️ 接入地址与官方文档不一致（实测发现）
+>
+> 官方 README 写的是 `https://mcp.mcd.cn/mcp`，**实测返回 404 Route Not Found**；
+> 真正可用的是**根路径** `https://mcp.mcd.cn`。
+>
+> 这个坑很隐蔽：404 而不是 401，容易被误判成「Token 无用」。
+> 探路实测记录：
+>
+> | 路径 | 响应 |
+> |---|---|
+> | `/mcp` · `/mcp/` · `/sse` · `/messages/` | 全部 404 |
+> | `/` | 200，返回 `serverInfo: {name:"mcd-mcp", version:"1.0.0"}` |
+>
+> 握手响应（实测）：
+>
+> ```json
+> {"jsonrpc":"2.0","id":1,"result":{
+>   "capabilities":{"tools":{}},
+>   "protocolVersion":"2024-11-05",
+>   "serverInfo":{"name":"mcd-mcp","version":"1.0.0"}}}
+> ```
 
 脱敏配置示例见 [`mcp-config.example.json`](mcp-config.example.json)。
+
+## 实测：`order-list` 真实出参 schema
+
+以下结构于 2026-10-10 用真实 Token 实测取得（服务端自带字段说明）：
+
+```
+data.list[]                    订单列表
+  .orderId / .orderType / .createTime / .beType / .beCode
+  .storeCode / .storeName / .orderStatus
+  .orderProductList[]          商品
+    .productCode / .productName / .quantity / .comboItemList
+  .realTotalAmount              总金额 —— ⚠️ 字符串，单位元（"84.00"）
+```
+
+外层包裹：`{"success":true,"code":200,"data":{"list":[...]}}`；
+新账号无订单时返回 `{"data":{}}`（空对象，不抛异常）。
+
+**由此修正的三处认知**（详见
+[`skill/mcd-time-machine/references/tools.md`](skill/mcd-time-machine/references/tools.md)）：
+
+1. 商品数组键名是 `orderProductList`，非 `items`/`goodsList`
+2. 金额是**字符串元**，非「分」——按分处理会差 100 倍
+3. 就餐方式键名是 `orderType`，值域含中文（「堂食」）
+4. 列表页**无单价字段**，item 级金额需 `query-order` 补齐；
+   总额一律以订单级 `realTotalAmount` 为准
+5. **套餐的可靠标志是 `comboItemList` 非空**，优于按名称匹配
 
 ## 本 Skill 使用的 MCP Tool
 

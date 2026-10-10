@@ -80,6 +80,71 @@ POST https://mcp.mcd.cn/mcp  →  {"error_msg":"404 Route Not Found"}
 产出 README、MCP_INTEGRATION、参赛声明（官方原文）、工具速查表、
 离线演示器（`scripts/demo.py`，免 Token 可玩）。
 
+### 阶段六：真实 Token 实测与字段校准（2026-10-10 11:19）
+
+拿到真实 MCP Token 后立即实测，发现**五处与预期不符**，全部修正并补回归测试。
+
+#### 发现 1：官方文档的接入地址是错的（最重要）
+
+| 来源 | 地址 | 实测 |
+|---|---|---|
+| 官方 README | `https://mcp.mcd.cn/mcp` | ❌ 404 Route Not Found |
+| 实测可用 | `https://mcp.mcd.cn`（根路径） | ✅ 握手成功 |
+
+依次探测 `/mcp`、`/mcp/`、`/sse`、`/messages/` 全部 404，只有根路径返回 200。
+
+**这个坑极隐蔽**：404 而非 401，会被误判为「Token 无效」而放弃。
+若未实测直接按官方文档配置，这个项目的 MCP 接入会完全无法工作。
+
+#### 发现 2-5：字段名与类型全部与猜测不符
+
+实测 `order-list` 的服务端 schema 描述后，修正了四处：
+
+| 项 | 原猜测 | 实测真值 | 若不修正的后果 |
+|---|---|---|---|
+| 商品数组键名 | `items` / `goodsList` | **`orderProductList`** | 商品被整体丢弃，口味画像全空 |
+| 商品名字段 | `name` | **`productName`** | 同上 |
+| 金额字段 | `totalAmount`（分为单位） | **`realTotalAmount`（字符串元，如 "84.00"）** | 金额差 100 倍 |
+| 就餐方式字段 | `diningType` | **`orderType`**（值域中文） | 渠道统计失效 |
+| 套餐判定 | 按名称含「套餐」 | **`comboItemList` 非空** | 套餐识别不可靠 |
+
+另新增 `store_code` / `order_status` 两个字段的支持。
+
+#### 校准后的验证
+
+- 新增 `TestRealSchemaRegression` 测试组（5 项），用**实测字段名**构造订单，
+  锁定全链路解析。**若将来有人凭直觉把别名改回猜测值，这组测试会立刻失败。**
+- 测试总数 36 → **41，全部通过**
+- 另实测 `now-time-info`、`query-my-account` 通过，
+  确认 Token 完全有效（积分账户可读，返回全 0 因从未消费）
+
+#### 仍未实测的部分
+
+账号无历史订单，`query-order` / `query-meals` / `calculate-price`
+的出参与分页机制**无法验证**，已在 `references/tools.md` 的
+「实测补丁记录」中明确标注为待补，避免后来者误以为已验证。
+
+### 阶段七：浏览器自动化通道（自主推进）
+
+用户授权「调用工具全自主推进，可控制电脑」后：
+
+1. 从 `D:\KJ-shared\capability-registry\SELF-DSH.md` 查到 DSH 侧
+   `gui-automation` 状态为「可启用未启用」，进而找到 WB 侧的
+   `win-desktop-agent__skillhub` 工具组（三层：CLI / ctypes / 图像点击）
+2. **实测确认 Edge 无未保存内容**（`--no-startup-window` 后台驻留 +
+   一个空白新标签页窗口）后才关闭重启
+3. **踩坑：只传 `--remote-debugging-port` 时端口不监听**，
+   必须同时显式指定 `--user-data-dir`（Chromium 系已知行为）
+4. 本机 Playwright / pyautogui 全部缺失，**未安装**（避免污染用户环境），
+   改用标准库自写零依赖 WebSocket 客户端直连 CDP（`scripts/cdp.py`）
+5. **踩坑：`self._handshake(path)` 误传不带前导斜杠的路径**，
+   请求行变成 `GET devtools/page/...` 导致 404。
+   排查过程曲折：先怀疑 target ID 时效性（推翻）、
+   再怀疑报文差异（逐字节比对确认相同），
+   最后用「类内变量 vs 局部变量」对照定位到真因。
+
+最终 Edge 152 + CDP 9222 打通，可正常读写页面内容。
+
 ## WorkBuddy 在开发中的具体作用
 
 | 环节 | WorkBuddy 的作用 |

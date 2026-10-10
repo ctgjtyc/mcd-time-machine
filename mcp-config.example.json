@@ -1,5 +1,6 @@
 {
   "_comment": "麦当劳 MCP 配置示例。本文件仅含占位符，不含任何真实凭证。",
+  "_note": "接入地址为 https://mcp.mcd.cn 根路径 —— 实测确认官方文档所写的 /mcp 会返回 404（2026-10-10 实测）",
   "mcpServers": {
     "mcd-mcp": {
       "type": "streamablehttp",
