@@ -1,3 +1,7 @@
+<div align="center">
+<img src="assets/banner.png" alt="麦麦时光机 MCD Time Machine — 把麦当劳历史订单变成一台时光机" width="100%">
+</div>
+
 # 🍟 麦麦时光机 · MCD Time Machine
 
 > **把麦当劳历史订单，变成一条可以回溯的时间线。**
@@ -7,7 +11,7 @@
 
 基于[麦当劳中国官方 MCP 服务](https://github.com/M-China/mcd-mcp-server) 开发的参赛 Skill —— **2026 麦当劳程序员创意开发大赛**。
 
-![Python](https://img.shields.io/badge/python-3.9%2B-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tests](https://img.shields.io/badge/tests-36%20passed-brightgreen)
+![Python](https://img.shields.io/badge/python-3.9%2B-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tests](https://img.shields.io/badge/tests-41%20passed-brightgreen)
 
 ---
 
@@ -158,7 +162,7 @@ mcd-time-machine/
 ├── src/mcd_time_machine/
 │   ├── normalize.py              # 出参容错归一化（别名表 / 时间 / 金额 / 就餐方式）
 │   └── analyze.py                # 时间轴 / 口味画像 / 复刻 / 有故事的订单
-├── tests/test_analyze.py         # 36 项单测，零第三方依赖
+├── tests/test_analyze.py         # 41 项单测，零第三方依赖
 ├── scripts/demo.py               # 离线演示器（免 Token 可玩）
 ├── skill/mcd-time-machine/
 │   ├── SKILL.md                  # Agent 侧指令与硬约束
@@ -174,7 +178,7 @@ mcd-time-machine/
 ## 跑测试
 
 ```bash
-python tests/test_analyze.py        # 36 passed
+python tests/test_analyze.py        # 41 passed
 python -m unittest discover tests   # 等价
 ```
 
