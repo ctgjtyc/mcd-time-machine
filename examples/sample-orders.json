@@ -1,0 +1,94 @@
+[
+  {
+    "orderId": "A1",
+    "createTime": "2026-10-08 12:30",
+    "totalAmount": 6200,
+    "diningType": "self_pickup",
+    "storeName": "望京SOHO店",
+    "items": [
+      {
+        "name": "巨无霸套餐",
+        "quantity": 1,
+        "price": 4200,
+        "isSet": true
+      },
+      {
+        "name": "麦乐鸡",
+        "quantity": 1,
+        "price": 2000
+      }
+    ]
+  },
+  {
+    "orderId": "A2",
+    "createTime": "2026-09-20 22:10",
+    "totalAmount": 3000,
+    "diningType": "self_pickup",
+    "storeName": "望京SOHO店",
+    "items": [
+      {
+        "name": "板烧鸡腿堡",
+        "quantity": 1,
+        "price": 2200
+      },
+      {
+        "name": "中可乐",
+        "quantity": 1,
+        "price": 800
+      }
+    ]
+  },
+  {
+    "orderId": "A3",
+    "createTime": "2026-09-19 23:40",
+    "totalAmount": 5200,
+    "diningType": "delivery",
+    "storeName": "三里屯太古里店",
+    "items": [
+      {
+        "name": "麦辣鸡腿汉堡",
+        "quantity": 2,
+        "price": 2000
+      },
+      {
+        "name": "薯条（中）",
+        "quantity": 1,
+        "price": 1200
+      }
+    ]
+  },
+  {
+    "orderId": "A4",
+    "createTime": "2025-11-11 08:15",
+    "totalAmount": 4300,
+    "diningType": "self_pickup",
+    "storeName": "望京SOHO店",
+    "items": [
+      {
+        "name": "培根蔬萃双层牛堡",
+        "quantity": 1,
+        "price": 2800
+      },
+      {
+        "name": "热美式",
+        "quantity": 1,
+        "price": 1500
+      }
+    ]
+  },
+  {
+    "orderId": "A5",
+    "createTime": "2025-03-02 19:00",
+    "totalAmount": 8400,
+    "diningType": "delivery",
+    "storeName": "望京SOHO店",
+    "items": [
+      {
+        "name": "巨无霸套餐",
+        "quantity": 2,
+        "price": 4200,
+        "isSet": true
+      }
+    ]
+  }
+]
